@@ -13,7 +13,6 @@ public class DriveForward extends CommandBase {
   private double distance;
 
   public DriveForward(double distance) {
-    RobotContainer.getDrive();
     // Use addRequirements() here to declare subsystem dependencies.
     addRequirements(DriveTrain.getInstance());
     this.distance = distance;
@@ -28,13 +27,17 @@ public class DriveForward extends CommandBase {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-      RobotContainer.getDrive().tankDrive(0.5,0.5);
+      if(distance > 0){
+        RobotContainer.getDrive().tankDrive(0.5, 0.5);
+      }else{
+        RobotContainer.getDrive().tankDrive(-0.5, -0.5);
+      } 
   }
 
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-
+       
   }
 
   // Returns true when the command should end.
@@ -42,6 +45,7 @@ public class DriveForward extends CommandBase {
   public boolean isFinished() {
     if(distance == RobotContainer.getDrive().getDistance()){
       return true;
-    }return false;
+    }
+    return false;
   }
 }

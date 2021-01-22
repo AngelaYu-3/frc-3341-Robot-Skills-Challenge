@@ -22,6 +22,7 @@ public class DriveTrain extends SubsystemBase {
   private AHRS gyro = new AHRS();
   private Ultrasonic ultrasonic = new Ultrasonic(RobotMap.ultrasonic1, RobotMap.ultrasonic2);
   private static DriveTrain instance;
+  private double TIKS_TO_INCHES;
   
   public DriveTrain() {
     left.setInverted(true);
@@ -55,7 +56,7 @@ public class DriveTrain extends SubsystemBase {
   }
 
   public double getDistance(){
-    return (left.getSelectedSensorPosition(0) + right.getSelectedSensorPosition(0))/2;
+    return ((left.getSelectedSensorPosition(0) + right.getSelectedSensorPosition(0))/2) * TIKS_TO_INCHES;
   }
 
   public double getUltrasonicDistance(){
@@ -67,6 +68,8 @@ public class DriveTrain extends SubsystemBase {
   }
 
   public double getAngle(){
+    //returns angle about Z axis from -180 to 180
+    //neg left, pos right
     return gyro.getYaw();
   }
   

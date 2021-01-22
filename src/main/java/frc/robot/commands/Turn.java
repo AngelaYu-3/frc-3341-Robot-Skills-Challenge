@@ -11,30 +11,29 @@ import frc.robot.subsystems.DriveTrain;
 public class Turn extends CommandBase {
   /** Creates a new Turn. */
   private double angle;
-  private boolean left;
   
-  public Turn(double angle, boolean left) {
+  public Turn(double angle) {
     RobotContainer.getDrive();
     // Use addRequirements() here to declare subsystem dependencies.
     addRequirements(DriveTrain.getInstance());
     this.angle = angle;
-    this.left = left;
   }
 
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    RobotContainer.getDrive().resetEncoders();;
+    RobotContainer.getDrive().resetGyro();
   }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
     //this can probably be optimized in some way--saw last year PID was used for power management?
-    if(left){
-      RobotContainer.getDrive().tankDrive(0, 0.5);
+    if(angle > 0){
+      //turn right
+      RobotContainer.getDrive().tankDrive(0.5, -0.5);
     } else {
-      RobotContainer.getDrive().tankDrive(0.5,0);
+      RobotContainer.getDrive().tankDrive(-0.5,0.5);
     }
     
   }
