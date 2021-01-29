@@ -10,7 +10,16 @@ import frc.robot.RobotContainer;
 
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import com.kauailabs.navx.frc.AHRS;
+
+import edu.wpi.first.wpilibj.controller.PIDController;
 import edu.wpi.first.wpilibj.Ultrasonic;
+import edu.wpi.first.wpilibj.controller.SimpleMotorFeedforward;
+import edu.wpi.first.wpilibj.geometry.Pose2d;
+import edu.wpi.first.wpilibj.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.kinematics.DifferentialDriveKinematics;
+import edu.wpi.first.wpilibj.kinematics.DifferentialDriveOdometry;
+import edu.wpi.first.wpilibj.kinematics.DifferentialDriveWheelSpeeds;
+
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 
@@ -19,11 +28,27 @@ public class DriveTrain extends SubsystemBase {
 
   private TalonSRX left = new TalonSRX(RobotMap.leftDrivePort);
   private TalonSRX right = new TalonSRX(RobotMap.rightDrivePort);
+
   private AHRS gyro = new AHRS();
   private Ultrasonic ultrasonic = new Ultrasonic(RobotMap.ultrasonic1, RobotMap.ultrasonic2);
+
   private static DriveTrain instance;
-  private double TIKS_TO_INCHES;
-  
+  private double TIKS_TO_METERS = 1; //find wheel circumference (in m!!) and divide by 1440 ticks
+
+  private Pose2d pose;
+
+  //obtains current robot position
+  DifferentialDriveOdometry odometry = new DifferentialDriveOdometry(getHeading());
+
+  //finds right and left velocities
+  DifferentialDriveKinematics kinematics = new DifferentialDriveKinematics(RobotMap.kTrackwidthMeters);
+
+  // estimates voltage needed given some velocity (RobotCharacterization)
+  SimpleMotorFeedforward feedForward = new SimpleMotorFeedforward(RobotMap.kS, RobotMap.kV, RobotMap.kA);
+
+  PIDController leftPIDController = new PIDController(RobotMap.kP, RobotMap.kI, RobotMap.kD);
+  PIDController rightPIDController = new PIDController(RobotMap.kP, RobotMap.kI, RobotMap.kD);
+
   public DriveTrain() {
     left.setInverted(true);
 
@@ -56,7 +81,7 @@ public class DriveTrain extends SubsystemBase {
   }
 
   public double getDistance(){
-    return ((left.getSelectedSensorPosition(0) + right.getSelectedSensorPosition(0))/2) * TIKS_TO_INCHES;
+    return ((left.getSelectedSensorPosition(0) + right.getSelectedSensorPosition(0))/2) * TIKS_TO_METERS;
   }
 
   public double getUltrasonicDistance(){
@@ -72,10 +97,51 @@ public class DriveTrain extends SubsystemBase {
     //neg left, pos right
     return gyro.getYaw();
   }
+
+  public Rotation2d getHeading(){
+    // gyros return pos values when you turn clockwise BUT by convention angles neg in cw rotation
+    // to fix this, put negative sign in fron tof gyro.getAngle()
+    return Rotation2d.fromDegrees(-gyro.getAngle());
+  }
+
+  public void setOutput(double leftVolts, double rightVolts){
+    left.set(ControlMode.PercentOutput, leftVolts/12);
+    right.set(ControlMode.PercentOutput, rightVolts/12);
+  }
+
+  
+  public DifferentialDriveWheelSpeeds getSpeeds() {
+    return new DifferentialDriveWheelSpeeds(
+      left.getSelectedSensorVelocity() * 10.0/4096 * 2 * Math.PI * RobotMap.radius,
+      right.getSelectedSensorVelocity() * 10.0/4096 * 2 * Math.PI * RobotMap.radius
+      );
+  }
+
+  public SimpleMotorFeedforward getFeedForward(){
+    return feedForward;
+  }
+
+  public PIDController getLeftPIDController(){
+    return leftPIDController;
+  }
+
+  public PIDController getRightPIDController(){
+    return rightPIDController;
+  }
+
+  public DifferentialDriveKinematics getKinematics(){
+    return kinematics;
+  }
+
+  public Pose2d getPose(){
+    return pose;
+  }
+
   
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
     tankDrive(RobotContainer.getJoy().getY(), RobotContainer.getJoy().getY());
+    pose = odometry.update(getHeading(), left.getSelectedSensorPosition(), right.getSelectedSensorPosition());
   }
 }
