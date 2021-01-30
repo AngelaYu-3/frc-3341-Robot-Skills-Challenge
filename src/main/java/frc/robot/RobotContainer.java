@@ -16,28 +16,58 @@ import edu.wpi.first.wpilibj.trajectory.TrajectoryConfig;
 import edu.wpi.first.wpilibj.trajectory.TrajectoryGenerator;
 import edu.wpi.first.wpilibj.util.Units;
 import edu.wpi.first.wpilibj2.command.RamseteCommand;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.commands.Barrel;
 import frc.robot.subsystems.DriveTrain;
 
 /** Add your docs here. */
 public class RobotContainer {
-    
-    //joysticks
+
+    // joysticks
     private static Joystick joy = new Joystick(RobotMap.joy);
     private static Joystick joy1 = new Joystick(RobotMap.joy1);
 
-    //instantiating subsystems
+    // instantiating subsystems
     private static DriveTrain drive = new DriveTrain();
 
-    public static Joystick getJoy(){
+    public static Joystick getJoy() {
         return joy;
     }
 
-    public static Joystick getJoy1(){
+    public static Joystick getJoy1() {
         return joy1;
     }
 
-    public static DriveTrain getDrive(){
+    public static DriveTrain getDrive() {
         return drive;
     }
+
+    public SequentialCommandGroup getAutonomousCommand() {
+        // An ExampleCommand will run in autonomous
+        TrajectoryConfig config = new TrajectoryConfig(Units.feetToMeters(2.0), Units.feetToMeters(2.0));
+        config.setKinematics(drive.getKinematics());
+    
+        //use pathweaver tool to get exact values!
+        Trajectory trajectory = TrajectoryGenerator.generateTrajectory(
+          Arrays.asList(new Pose2d(), 
+              new Pose2d(1.0, 0, new Rotation2d()),
+              new Pose2d(2.3, 1.2, Rotation2d.fromDegrees(90.0))),
+              config
+         );
+    
+        RamseteCommand command = new RamseteCommand(
+          trajectory,
+          drive::getPose,
+          new RamseteController(2, .7),
+          drive.getFeedForward(),
+          drive.getKinematics(),
+          drive::getSpeeds,
+          drive.getLeftPIDController(),
+          drive.getRightPIDController(),
+          drive::setOutputVolts,
+          drive
+        );
+    
+        return command.andThen(() -> drive.setOutputVolts(0, 0));
+      }
 }

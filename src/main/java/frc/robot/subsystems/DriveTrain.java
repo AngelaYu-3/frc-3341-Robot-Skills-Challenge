@@ -4,22 +4,36 @@
 
 package frc.robot.subsystems;
 
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.RobotMap;
-import frc.robot.RobotContainer;
-
+import com.ctre.phoenix.motorcontrol.ControlMode;
+import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import com.kauailabs.navx.frc.AHRS;
 import edu.wpi.first.wpilibj.SPI;
-
 import edu.wpi.first.wpilibj.Ultrasonic;
+import edu.wpi.first.wpilibj.controller.PIDController;
+import edu.wpi.first.wpilibj.controller.SimpleMotorFeedforward;
+import edu.wpi.first.wpilibj.geometry.Pose2d;
 import edu.wpi.first.wpilibj.geometry.Rotation2d;
-
-import com.ctre.phoenix.motorcontrol.ControlMode;
-import com.ctre.phoenix.motorcontrol.FeedbackDevice;
+import edu.wpi.first.wpilibj.kinematics.DifferentialDriveKinematics;
+import edu.wpi.first.wpilibj.kinematics.DifferentialDriveOdometry;
+import edu.wpi.first.wpilibj.kinematics.DifferentialDriveWheelSpeeds;
+import edu.wpi.first.wpilibj.util.Units;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.RobotContainer;
+import frc.robot.RobotMap;
 
 public class DriveTrain extends SubsystemBase {
   /** Creates a new DriveTrain. */
+  private double kGearRatio = 4;
+  private double kWheelRadiusInches = 3;
+  private double kTrackwidth = 28;
+  private int kTiksPerRotation = 1440;
+  private double kS = 1;
+  private double kV = 1;
+  private double kA = 1;
+  private double kP = 1;
+  private double kI = 0;
+  private double kD = 0;
 
   private TalonSRX left = new TalonSRX(RobotMap.leftDrivePort);
   private TalonSRX right = new TalonSRX(RobotMap.rightDrivePort);
@@ -28,7 +42,16 @@ public class DriveTrain extends SubsystemBase {
   private Ultrasonic ultrasonic = new Ultrasonic(RobotMap.ultrasonic1, RobotMap.ultrasonic2);
 
   private static DriveTrain instance;
-  private double TIKS_TO_METERS = 1; //find wheel circumference (in m) multiply by gear ratio and divide by 1440 ticks
+  
+  private DifferentialDriveKinematics kinematics = new DifferentialDriveKinematics(Units.inchesToMeters(kTrackwidth));
+  private DifferentialDriveOdometry odometry = new DifferentialDriveOdometry(getHeading());
+
+  private SimpleMotorFeedforward feedForward = new SimpleMotorFeedforward(kS, kV, kA);
+
+  private PIDController leftPIDController = new PIDController(kP, kI, kD);
+  private PIDController rightPIDController = new PIDController(kP, kI, kD);
+
+  Pose2d pose = new Pose2d();
 
   public DriveTrain() {
     left.setInverted(true);
@@ -61,10 +84,6 @@ public class DriveTrain extends SubsystemBase {
     right.setSelectedSensorPosition(0,0,10); 
   }
 
-  public double getDistance(){
-    return ((left.getSelectedSensorPosition(0) + right.getSelectedSensorPosition(0))/2) * TIKS_TO_METERS;
-  }
-
   public double getUltrasonicDistance(){
     return ultrasonic.getRangeInches();
   }
@@ -79,15 +98,62 @@ public class DriveTrain extends SubsystemBase {
     return gyro.getYaw();
   }
 
-  public Rotation2d getHeading(){
-    // gyros return pos values when you turn clockwise BUT by convention angles neg in cw rotation
-    // to fix this, put negative sign in fron tof gyro.getAngle()
-    return Rotation2d.fromDegrees(-gyro.getAngle());
-  }
-
   public void setOutput(double leftVolts, double rightVolts){
     left.set(ControlMode.PercentOutput, leftVolts/12);
     right.set(ControlMode.PercentOutput, rightVolts/12);
+  }
+
+  public Rotation2d getHeading(){
+    return Rotation2d.fromDegrees(-gyro.getAngle());
+  }
+
+  //convert from tiks/s to m/s
+  public DifferentialDriveWheelSpeeds getSpeeds(){
+    return new DifferentialDriveWheelSpeeds(
+      left.getSelectedSensorVelocity() / (kTiksPerRotation * kGearRatio) * 2 * Math.PI * kWheelRadiusInches,
+      right.getSelectedSensorVelocity() / (kTiksPerRotation * kGearRatio) * 2 * Math.PI * kWheelRadiusInches
+    );
+  }
+
+  public double getLeftDistanceMeters(){
+      return left.getSelectedSensorPosition(0) / (kTiksPerRotation * kGearRatio) * 2 * Math.PI * kWheelRadiusInches;
+  }
+
+  public double getRightDistanceMeters(){
+    return right.getSelectedSensorPosition(0) / (kTiksPerRotation * kGearRatio) * 2 * Math.PI * kWheelRadiusInches;
+  }
+
+  public double getDistance(){
+    return (getLeftDistanceMeters() + getRightDistanceMeters()) / 2;
+  }
+
+  public DifferentialDriveKinematics getKinematics(){
+    return kinematics;
+  }
+
+  public Pose2d getPose(){
+    return pose;
+  }
+
+  public SimpleMotorFeedforward getFeedForward(){
+    return feedForward;
+  }
+
+  public PIDController getLeftPIDController(){
+    return leftPIDController;
+  }
+
+  public PIDController getRightPIDController(){
+    return rightPIDController;
+  }
+
+  public void setOutputVolts(double leftVolts, double rightVolts){
+    left.set(ControlMode.PercentOutput, leftVolts/12);
+    right.set(ControlMode.PercentOutput, rightVolts/12);
+  }
+
+  public void reset(){
+    odometry.resetPosition(new Pose2d(), getHeading());
   }
 
   
@@ -95,5 +161,6 @@ public class DriveTrain extends SubsystemBase {
   public void periodic() {
     // This method will be called once per scheduler run
     tankDrive(RobotContainer.getJoy().getY(), RobotContainer.getJoy().getY());
+    pose = odometry.update(getHeading(), getLeftDistanceMeters(), getRightDistanceMeters());
   }
 }
