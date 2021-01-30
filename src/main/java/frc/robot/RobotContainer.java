@@ -28,7 +28,6 @@ public class RobotContainer {
 
     //instantiating subsystems
     private static DriveTrain drive = new DriveTrain();
-    private static Barrel barrel = new Barrel();
 
     public static Joystick getJoy(){
         return joy;
@@ -41,25 +40,4 @@ public class RobotContainer {
     public static DriveTrain getDrive(){
         return drive;
     }
-
-	/*public Command getAutonomousCommand() {
-
-        //takes in max velocity and acceleration
-        TrajectoryConfig config = new TrajectoryConfig(Units.feetToMeters(2), Units.feetToMeters(2));  
-        config.setKinematics(drive.getKinematics());
-
-        Trajectory trajectory = TrajectoryGenerator.generateTrajectory(
-            //list of waypoints
-            Arrays.asList(new Pose2d(), new Pose2d(1, 0, new Rotation2d())),
-            config    
-        );
-
-        RamseteCommand command = new RamseteCommand(
-            trajectory, drive::getPose, new RamseteController(2.0, 0.7), 
-            drive::getFeedForward, drive.getKinematics(), drive.getSpeeds(), 
-           drive.getLeftPIDController(), drive.getRightPIDController(), drive::setOutput, drive);
-
-        return command;
-
-    }*/
 }

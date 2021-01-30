@@ -10,15 +10,10 @@ import frc.robot.RobotContainer;
 
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import com.kauailabs.navx.frc.AHRS;
+import edu.wpi.first.wpilibj.SPI;
 
-import edu.wpi.first.wpilibj.controller.PIDController;
 import edu.wpi.first.wpilibj.Ultrasonic;
-import edu.wpi.first.wpilibj.controller.SimpleMotorFeedforward;
-import edu.wpi.first.wpilibj.geometry.Pose2d;
 import edu.wpi.first.wpilibj.geometry.Rotation2d;
-import edu.wpi.first.wpilibj.kinematics.DifferentialDriveKinematics;
-import edu.wpi.first.wpilibj.kinematics.DifferentialDriveOdometry;
-import edu.wpi.first.wpilibj.kinematics.DifferentialDriveWheelSpeeds;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
@@ -29,25 +24,11 @@ public class DriveTrain extends SubsystemBase {
   private TalonSRX left = new TalonSRX(RobotMap.leftDrivePort);
   private TalonSRX right = new TalonSRX(RobotMap.rightDrivePort);
 
-  private AHRS gyro = new AHRS();
+  private AHRS gyro = new AHRS(SPI.Port.kMXP);
   private Ultrasonic ultrasonic = new Ultrasonic(RobotMap.ultrasonic1, RobotMap.ultrasonic2);
 
   private static DriveTrain instance;
-  private double TIKS_TO_METERS = 1; //find wheel circumference (in m!!) and divide by 1440 ticks
-
-  private Pose2d pose;
-
-  //obtains current robot position
-  DifferentialDriveOdometry odometry = new DifferentialDriveOdometry(getHeading());
-
-  //finds right and left velocities
-  DifferentialDriveKinematics kinematics = new DifferentialDriveKinematics(RobotMap.kTrackwidthMeters);
-
-  // estimates voltage needed given some velocity (RobotCharacterization)
-  SimpleMotorFeedforward feedForward = new SimpleMotorFeedforward(RobotMap.kS, RobotMap.kV, RobotMap.kA);
-
-  PIDController leftPIDController = new PIDController(RobotMap.kP, RobotMap.kI, RobotMap.kD);
-  PIDController rightPIDController = new PIDController(RobotMap.kP, RobotMap.kI, RobotMap.kD);
+  private double TIKS_TO_METERS = 1; //find wheel circumference (in m) multiply by gear ratio and divide by 1440 ticks
 
   public DriveTrain() {
     left.setInverted(true);
@@ -110,38 +91,9 @@ public class DriveTrain extends SubsystemBase {
   }
 
   
-  public DifferentialDriveWheelSpeeds getSpeeds() {
-    return new DifferentialDriveWheelSpeeds(
-      left.getSelectedSensorVelocity() * 10.0/4096 * 2 * Math.PI * RobotMap.radius,
-      right.getSelectedSensorVelocity() * 10.0/4096 * 2 * Math.PI * RobotMap.radius
-      );
-  }
-
-  public SimpleMotorFeedforward getFeedForward(){
-    return feedForward;
-  }
-
-  public PIDController getLeftPIDController(){
-    return leftPIDController;
-  }
-
-  public PIDController getRightPIDController(){
-    return rightPIDController;
-  }
-
-  public DifferentialDriveKinematics getKinematics(){
-    return kinematics;
-  }
-
-  public Pose2d getPose(){
-    return pose;
-  }
-
-  
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
     tankDrive(RobotContainer.getJoy().getY(), RobotContainer.getJoy().getY());
-    pose = odometry.update(getHeading(), left.getSelectedSensorPosition(), right.getSelectedSensorPosition());
   }
 }
