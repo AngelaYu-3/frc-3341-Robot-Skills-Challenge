@@ -24,10 +24,11 @@ import frc.robot.RobotMap;
 
 public class DriveTrain extends SubsystemBase {
   /** Creates a new DriveTrain. */
-  private double kGearRatio = 4;
-  private double kWheelRadiusInches = 3;
+  private double kGearRatio = 10;
+  private double kWheelRadiusInches = 4;
   private double kTrackwidth = 28;
   private int kTiksPerRotation = 1440;
+  private double kTiksToInches = 89/16140;
   private double kS = 1;
   private double kV = 1;
   private double kA = 1;
@@ -39,7 +40,7 @@ public class DriveTrain extends SubsystemBase {
   private TalonSRX right = new TalonSRX(RobotMap.rightDrivePort);
 
   private AHRS gyro = new AHRS(SPI.Port.kMXP);
-  private Ultrasonic ultrasonic = new Ultrasonic(RobotMap.ultrasonic1, RobotMap.ultrasonic2);
+  //private Ultrasonic ultrasonic = new Ultrasonic(RobotMap.ultrasonic1, RobotMap.ultrasonic2);
 
   private static DriveTrain instance;
   
@@ -62,7 +63,7 @@ public class DriveTrain extends SubsystemBase {
     right.configFactoryDefault();
     right.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative, 0, 10);
 
-    ultrasonic.setAutomaticMode(true);
+   //ultrasonic.setAutomaticMode(true);
 
     gyro.calibrate();
   }
@@ -84,9 +85,9 @@ public class DriveTrain extends SubsystemBase {
     right.setSelectedSensorPosition(0,0,10); 
   }
 
-  public double getUltrasonicDistance(){
+  /*public double getUltrasonicDistance(){
     return ultrasonic.getRangeInches();
-  }
+  }*/
   
   public void resetGyro(){
     gyro.zeroYaw();
@@ -110,17 +111,18 @@ public class DriveTrain extends SubsystemBase {
   //convert from tiks/s to m/s
   public DifferentialDriveWheelSpeeds getSpeeds(){
     return new DifferentialDriveWheelSpeeds(
-      left.getSelectedSensorVelocity() / (kTiksPerRotation * kGearRatio) * 2 * Math.PI * kWheelRadiusInches,
-      right.getSelectedSensorVelocity() / (kTiksPerRotation * kGearRatio) * 2 * Math.PI * kWheelRadiusInches
-    );
+      left.getSelectedSensorVelocity() * 2 * Math.PI * kWheelRadiusInches/ (kTiksPerRotation * kGearRatio),
+      right.getSelectedSensorVelocity() * 2 * Math.PI * kWheelRadiusInches/ (kTiksPerRotation * kGearRatio));
   }
 
   public double getLeftDistanceMeters(){
-      return left.getSelectedSensorPosition(0) / (kTiksPerRotation * kGearRatio) * 2 * Math.PI * kWheelRadiusInches;
+      return Units.inchesToMeters(left.getSelectedSensorPosition(0)* kTiksToInches);
+      //return left.getSelectedSensorPosition(0) * 2 * Math.PI * kWheelRadiusInches/ (kTiksPerRotation * kGearRatio);
   }
 
   public double getRightDistanceMeters(){
-    return right.getSelectedSensorPosition(0) / (kTiksPerRotation * kGearRatio) * 2 * Math.PI * kWheelRadiusInches;
+    return Units.inchesToMeters(right.getSelectedSensorPosition(0)* kTiksToInches);
+   // return right.getSelectedSensorPosition(0) * 2 * Math.PI * kWheelRadiusInches/ (kTiksPerRotation * kGearRatio);
   }
 
   public double getDistance(){
@@ -160,7 +162,7 @@ public class DriveTrain extends SubsystemBase {
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
-    tankDrive(RobotContainer.getJoy().getY(), RobotContainer.getJoy().getY());
+    tankDrive(RobotContainer.getJoy().getY(), RobotContainer.getJoy1().getY());
     pose = odometry.update(getHeading(), getLeftDistanceMeters(), getRightDistanceMeters());
   }
 }

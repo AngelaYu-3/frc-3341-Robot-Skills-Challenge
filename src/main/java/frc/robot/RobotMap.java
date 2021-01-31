@@ -10,8 +10,8 @@ import edu.wpi.first.wpilibj.kinematics.DifferentialDriveKinematics;
 public class RobotMap {
 
     //motor ports
-    public static int leftDrivePort = 0;
-    public static int rightDrivePort = 1;
+    public static int leftDrivePort = 2;
+    public static int rightDrivePort = 3;
 
     //joystick ports
 	public static int joy = 0;
