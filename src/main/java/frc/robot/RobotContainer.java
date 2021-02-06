@@ -4,16 +4,23 @@
 
 package frc.robot;
 
+import java.io.IOException;
+import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.List;
 
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.command.Command;
 import edu.wpi.first.wpilibj.controller.RamseteController;
 import edu.wpi.first.wpilibj.geometry.Pose2d;
 import edu.wpi.first.wpilibj.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.geometry.Translation2d;
 import edu.wpi.first.wpilibj.trajectory.Trajectory;
 import edu.wpi.first.wpilibj.trajectory.TrajectoryConfig;
 import edu.wpi.first.wpilibj.trajectory.TrajectoryGenerator;
+import edu.wpi.first.wpilibj.trajectory.TrajectoryUtil;
 import edu.wpi.first.wpilibj.util.Units;
 import edu.wpi.first.wpilibj2.command.RamseteCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
@@ -48,17 +55,41 @@ public class RobotContainer {
         // An ExampleCommand will run in autonomous
         TrajectoryConfig config = new TrajectoryConfig(Units.feetToMeters(2.0), Units.feetToMeters(2.0));
         config.setKinematics(drive.getKinematics());
-    
-        //use pathweaver tool to get exact values!
-        Trajectory trajectory = TrajectoryGenerator.generateTrajectory(
+        
+        //pathweaver testing (S path)
+        String trajectoryJSON = "paths/test.wpilib.json";
+        Trajectory trajectory = new Trajectory();
+
+        try {
+         Path trajectoryPath = Filesystem.getDeployDirectory().toPath().resolve(trajectoryJSON);
+         trajectory = TrajectoryUtil.fromPathweaverJson(trajectoryPath);
+        } catch (IOException ex) {
+         DriverStation.reportError("Unable to open trajectory: " + trajectoryJSON, ex.getStackTrace());
+       }
+       
+        Trajectory trajectoryEx = TrajectoryGenerator.generateTrajectory(
+            // Start at the origin facing the +X direction
+            new Pose2d(0, 0, new Rotation2d(0)),
+            // Pass through these two interior waypoints, making an 's' curve path
+            List.of(
+                new Translation2d(1, 1),
+                new Translation2d(2, -1)
+            ),
+            // End 3 meters straight ahead of where we started, facing forward
+            new Pose2d(3, 0, new Rotation2d(0)),
+            // Pass config
+            config
+        );
+        
+        /*Trajectory trajectory = TrajectoryGenerator.generateTrajectory(
           Arrays.asList(new Pose2d(), 
               new Pose2d(1.0, 0, new Rotation2d()),
               new Pose2d(2.3, 1.2, Rotation2d.fromDegrees(90.0))),
               config
-         );
+         );*/
     
         RamseteCommand command = new RamseteCommand(
-          trajectory,
+          trajectoryEx,
           drive::getPose,
           new RamseteController(2, .7),
           drive.getFeedForward(),

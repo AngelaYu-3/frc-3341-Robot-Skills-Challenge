@@ -45,7 +45,7 @@ public class Turn extends CommandBase {
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-  if(angle == RobotContainer.getDrive().getAngle()){
+  if(Math.abs(angle - RobotContainer.getDrive().getAngle()) == 10){
     return true;
   }return false;
   }

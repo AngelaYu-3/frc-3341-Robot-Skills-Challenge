@@ -61,13 +61,8 @@ public class DriveForward extends CommandBase {
       /*double LeftD = RobotContainer.getDrive().getLeftDistanceMeters() - initLeft;
       double RightD = RobotContainer.getDrive().getRightDistanceMeters() - initRight;
       System.out.println("Left: " + LeftD + "Right: " + RightD);*/
-      return true;
-    }return false;
-   /* if(distance == RobotContainer.getDrive().getDistance()){
-      RobotContainer.getDrive().resetEncoders();
       RobotContainer.getDrive().tankDrive(0, 0);
       return true;
-    }
-    return false;*/
+    }return false;
   }
 }
