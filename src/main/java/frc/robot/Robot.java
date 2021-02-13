@@ -4,6 +4,8 @@ import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.commands.DriveForward;
+import frc.robot.commands.IntakeTest;
+import frc.robot.commands.Turn;
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
@@ -54,8 +56,10 @@ public class Robot extends TimedRobot {
   @Override
   public void autonomousInit() {
     System.out.println("AUTO ENTERED");
-    m_autonomousCommand = new DriveForward(5);
-    //m_autonomousCommand = m_robotContainer.getAutonomousCommand();
+    //m_autonomousCommand = new DriveForward(-2);
+    //m_autonomousCommand = new Turn(45);
+    m_autonomousCommand = new IntakeTest();
+
 
     // schedule the autonomous command (example)
 

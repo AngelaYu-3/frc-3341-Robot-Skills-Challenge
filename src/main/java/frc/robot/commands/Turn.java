@@ -33,23 +33,26 @@ public class Turn extends CommandBase {
     double power = error * 0.01;
 
     if(power > 0.5) power = 0.5;
-    if(angle > 0){
-      //turn right
-      RobotContainer.getDrive().tankDrive(power, -power);
-    } else {
-      RobotContainer.getDrive().tankDrive(-power,power);
-    }
+
+    //turn right
+    if(angle > 0) RobotContainer.getDrive().tankDrive(power, -power);
+    //turn left
+    else RobotContainer.getDrive().tankDrive(-power, power);
     
   }
 
   // Called once the command ends or is interrupted.
   @Override
-  public void end(boolean interrupted) {}
+  public void end(boolean interrupted) {
+    RobotContainer.getDrive().tankDrive(0, 0);
+  }
 
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-  if(Math.abs(angle - RobotContainer.getDrive().getAngle()) == 3){
+  //System.out.println(RobotContainer.getDrive().getAngle());
+  //System.out.println(angle - RobotContainer.getDrive().getAngle());
+  if(Math.abs(angle - RobotContainer.getDrive().getAngle()) <= 10){
     return true;
   }return false;
   }

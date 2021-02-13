@@ -28,7 +28,7 @@ public class DriveTrain extends SubsystemBase {
   private double kWheelRadiusInches = 4;
   private double kTrackwidth = 28;
   private int kTiksPerRotation = 1440;
-  private double kTiksToInches = 89/16140;
+  private double kTiksToInches = 12 * Math.PI * (1/1440) * 3;
   private double kS = 1;
   private double kV = 1;
   private double kA = 1;
@@ -55,13 +55,16 @@ public class DriveTrain extends SubsystemBase {
   Pose2d pose = new Pose2d();
 
   public DriveTrain() {
-    left.setInverted(true);
+    //left.setInverted(true);
 
     left.configFactoryDefault();
     left.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative, 0, 10);
 
     right.configFactoryDefault();
+    right.setInverted(true);
     right.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative, 0, 10);
+
+    resetEncoders();
 
    //ultrasonic.setAutomaticMode(true);
 
@@ -81,8 +84,8 @@ public class DriveTrain extends SubsystemBase {
   }
 
   public void resetEncoders(){
-    left.setSelectedSensorPosition(0,0,10); 
-    right.setSelectedSensorPosition(0,0,10); 
+    left.setSelectedSensorPosition(0, 0, 10);
+    right.setSelectedSensorPosition(0, 0, 10);
   }
 
   /*public double getUltrasonicDistance(){
@@ -115,18 +118,19 @@ public class DriveTrain extends SubsystemBase {
       right.getSelectedSensorVelocity() * 2 * Math.PI * kWheelRadiusInches/ (kTiksPerRotation * kGearRatio));
   }
 
-  public double getLeftDistanceMeters(){
-      return Units.inchesToMeters(left.getSelectedSensorPosition(0)* kTiksToInches);
-      //return left.getSelectedSensorPosition(0) * 2 * Math.PI * kWheelRadiusInches/ (kTiksPerRotation * kGearRatio);
-  }
-
   public double getRightDistanceMeters(){
-    return Units.inchesToMeters(right.getSelectedSensorPosition(0)* kTiksToInches);
+    return Units.inchesToMeters(right.getSelectedSensorPosition()* 12 * Math.PI * (1/1440) * 3);
    // return right.getSelectedSensorPosition(0) * 2 * Math.PI * kWheelRadiusInches/ (kTiksPerRotation * kGearRatio);
   }
 
-  public double getDistance(){
-    return (getLeftDistanceMeters() + getRightDistanceMeters()) / 2;
+  public double getLeftDistanceMeters(){
+    return Units.inchesToMeters(left.getSelectedSensorPosition()* 12 * Math.PI * (1/1440) * 3);
+   // return right.getSelectedSensorPosition(0) * 2 * Math.PI * kWheelRadiusInches/ (kTiksPerRotation * kGearRatio);
+  }
+
+  public double getEncoderDistance(){
+    //System.out.println(Units.inchesToMeters(left.getSelectedSensorPosition(0) + right.getSelectedSensorPosition(0)) * 0.5 * kTiksToInches);
+    return (left.getSelectedSensorPosition(0) + right.getSelectedSensorPosition(0)) * 0.5 * kTiksToInches;
   }
 
   public DifferentialDriveKinematics getKinematics(){

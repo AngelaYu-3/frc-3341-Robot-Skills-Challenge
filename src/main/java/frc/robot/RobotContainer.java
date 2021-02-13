@@ -12,7 +12,6 @@ import java.util.List;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.Joystick;
-import edu.wpi.first.wpilibj.command.Command;
 import edu.wpi.first.wpilibj.controller.RamseteController;
 import edu.wpi.first.wpilibj.geometry.Pose2d;
 import edu.wpi.first.wpilibj.geometry.Rotation2d;
@@ -26,7 +25,10 @@ import edu.wpi.first.wpilibj2.command.RamseteCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.commands.Barrel;
 import frc.robot.commands.DriveForward;
+import frc.robot.commands.IntakeTest;
 import frc.robot.subsystems.DriveTrain;
+import edu.wpi.first.wpilibj2.command.button.JoystickButton;
+
 
 /** Add your docs here. */
 public class RobotContainer {
@@ -34,6 +36,13 @@ public class RobotContainer {
     // joysticks
     private static Joystick joy = new Joystick(RobotMap.joy);
     private static Joystick joy1 = new Joystick(RobotMap.joy1);
+    private JoystickButton intake;
+    private IntakeTest intakeTest = new IntakeTest();
+
+    public RobotContainer(){
+        intake = new JoystickButton(joy, 1);
+        intake.toggleWhenPressed(intakeTest);
+    }
 
     // instantiating subsystems
     private static DriveTrain drive = new DriveTrain();
