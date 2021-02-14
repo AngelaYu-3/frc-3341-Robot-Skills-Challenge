@@ -3,9 +3,7 @@ package frc.robot;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import frc.robot.commands.DriveForward;
 import frc.robot.commands.IntakeTest;
-import frc.robot.commands.Turn;
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
@@ -15,7 +13,6 @@ import frc.robot.commands.Turn;
  */
 public class Robot extends TimedRobot {
   private Command m_autonomousCommand;
-
   private RobotContainer m_robotContainer;
 
   /**
@@ -62,7 +59,6 @@ public class Robot extends TimedRobot {
 
 
     // schedule the autonomous command (example)
-
     if (m_autonomousCommand != null) {
       m_autonomousCommand.schedule();
     }

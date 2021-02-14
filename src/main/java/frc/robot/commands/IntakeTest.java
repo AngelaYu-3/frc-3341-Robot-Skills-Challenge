@@ -11,6 +11,7 @@ import edu.wpi.first.wpilibj2.command.CommandBase;
 public class IntakeTest extends CommandBase {
   /** Creates a new IntakeTest. */
   private TalonSRX storer = new TalonSRX(10);
+  
   public IntakeTest() {
     // Use addRequirements() here to declare subsystem dependencies.
   }
@@ -22,8 +23,9 @@ public class IntakeTest extends CommandBase {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
+    //when ball is intook, goes from 0 to about 5 amps
     storer.set(ControlMode.PercentOutput, 0.5);
-    System.out.println(storer.getSupplyCurrent());
+    System.out.println(storer.getSupplyCurrent()); 
   }
 
   // Called once the command ends or is interrupted.

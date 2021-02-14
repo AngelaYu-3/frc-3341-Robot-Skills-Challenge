@@ -6,16 +6,14 @@ package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.RobotContainer;
-import frc.robot.subsystems.DriveTrain;
 
 public class Turn extends CommandBase {
   /** Creates a new Turn. */
   private double angle;
   
   public Turn(double angle) {
-    RobotContainer.getDrive();
     // Use addRequirements() here to declare subsystem dependencies.
-    addRequirements(DriveTrain.getInstance());
+    addRequirements(RobotContainer.getDrive());
     this.angle = angle;
   }
 
@@ -33,10 +31,7 @@ public class Turn extends CommandBase {
     double power = error * 0.01;
 
     if(power > 0.5) power = 0.5;
-
-    //turn right
     if(angle > 0) RobotContainer.getDrive().tankDrive(power, -power);
-    //turn left
     else RobotContainer.getDrive().tankDrive(-power, power);
     
   }

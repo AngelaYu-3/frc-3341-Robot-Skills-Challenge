@@ -6,7 +6,6 @@ package frc.robot;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.Arrays;
 import java.util.List;
 
 import edu.wpi.first.wpilibj.DriverStation;
@@ -23,8 +22,6 @@ import edu.wpi.first.wpilibj.trajectory.TrajectoryUtil;
 import edu.wpi.first.wpilibj.util.Units;
 import edu.wpi.first.wpilibj2.command.RamseteCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
-import frc.robot.commands.Barrel;
-import frc.robot.commands.DriveForward;
 import frc.robot.commands.IntakeTest;
 import frc.robot.subsystems.DriveTrain;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
@@ -37,11 +34,10 @@ public class RobotContainer {
     private static Joystick joy = new Joystick(RobotMap.joy);
     private static Joystick joy1 = new Joystick(RobotMap.joy1);
     private JoystickButton intake;
-    private IntakeTest intakeTest = new IntakeTest();
 
     public RobotContainer(){
         intake = new JoystickButton(joy, 1);
-        intake.toggleWhenPressed(intakeTest);
+        intake.toggleWhenPressed(new IntakeTest());
     }
 
     // instantiating subsystems

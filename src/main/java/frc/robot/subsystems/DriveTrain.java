@@ -24,11 +24,7 @@ import frc.robot.RobotMap;
 
 public class DriveTrain extends SubsystemBase {
   /** Creates a new DriveTrain. */
-  private double kGearRatio = 10;
-  private double kWheelRadiusInches = 4;
   private double kTrackwidth = 28;
-  private int kTiksPerRotation = 1440;
-  private double kTiksToInches = 12 * Math.PI * (1/1440) * 3;
   private double kS = 1;
   private double kV = 1;
   private double kA = 1;
@@ -71,7 +67,7 @@ public class DriveTrain extends SubsystemBase {
     gyro.calibrate();
   }
 
-  public static DriveTrain getInstance(){
+  public DriveTrain getInstance(){
     if(instance == null){
       instance = new DriveTrain();
     }
@@ -79,8 +75,25 @@ public class DriveTrain extends SubsystemBase {
   }
 
   public void tankDrive(double lPower, double rPower){
+    System.out.println("Total Distance:" + getEncoderDistance());
+    System.out.println("RIGHT: " + getRightDistanceMeters());
+    System.out.println("LEFT: " + getLeftDistanceMeters());
+
     left.set(ControlMode.PercentOutput, lPower);
     right.set(ControlMode.PercentOutput, rPower);
+  }
+
+  public void arcadeDrive(double y, double x){
+      //not so sensitive squaring
+      if(x < 0) x = - x * x;
+      else x = x * x;
+
+      if(y < 0) y = -y * y;
+      else y = y * y;
+
+      left.set(ControlMode.PercentOutput, y + x); 
+      right.set(ControlMode.PercentOutput, y - x);
+
   }
 
   public void resetEncoders(){
@@ -114,23 +127,21 @@ public class DriveTrain extends SubsystemBase {
   //convert from tiks/s to m/s
   public DifferentialDriveWheelSpeeds getSpeeds(){
     return new DifferentialDriveWheelSpeeds(
-      left.getSelectedSensorVelocity() * 2 * Math.PI * kWheelRadiusInches/ (kTiksPerRotation * kGearRatio),
-      right.getSelectedSensorVelocity() * 2 * Math.PI * kWheelRadiusInches/ (kTiksPerRotation * kGearRatio));
+      left.getSelectedSensorVelocity() * 0.16 * Math.PI * (1/4096),
+      right.getSelectedSensorVelocity() * 0.16 * Math.PI * (1/4096));
   }
 
   public double getRightDistanceMeters(){
-    return Units.inchesToMeters(right.getSelectedSensorPosition()* 12 * Math.PI * (1/1440) * 3);
-   // return right.getSelectedSensorPosition(0) * 2 * Math.PI * kWheelRadiusInches/ (kTiksPerRotation * kGearRatio);
+    return right.getSelectedSensorPosition() * 0.16 * Math.PI * (1/4096);
   }
 
   public double getLeftDistanceMeters(){
-    return Units.inchesToMeters(left.getSelectedSensorPosition()* 12 * Math.PI * (1/1440) * 3);
-   // return right.getSelectedSensorPosition(0) * 2 * Math.PI * kWheelRadiusInches/ (kTiksPerRotation * kGearRatio);
+    return left.getSelectedSensorPosition() * 0.16 * Math.PI * (1/4096);
   }
 
   public double getEncoderDistance(){
-    //System.out.println(Units.inchesToMeters(left.getSelectedSensorPosition(0) + right.getSelectedSensorPosition(0)) * 0.5 * kTiksToInches);
-    return (left.getSelectedSensorPosition(0) + right.getSelectedSensorPosition(0)) * 0.5 * kTiksToInches;
+    return(getLeftDistanceMeters() + getRightDistanceMeters()) * 0.5;
+    //return (Math.abs(getLeftDistanceMeters()) + Math.abs(getRightDistanceMeters()) * 0.5);
   }
 
   public DifferentialDriveKinematics getKinematics(){
@@ -167,6 +178,7 @@ public class DriveTrain extends SubsystemBase {
   public void periodic() {
     // This method will be called once per scheduler run
     tankDrive(RobotContainer.getJoy().getY(), RobotContainer.getJoy1().getY());
+    //arcadeDrive(RobotContainer.getJoy().getY(), RobotContainer.getJoy().getX());
     pose = odometry.update(getHeading(), getLeftDistanceMeters(), getRightDistanceMeters());
   }
 }

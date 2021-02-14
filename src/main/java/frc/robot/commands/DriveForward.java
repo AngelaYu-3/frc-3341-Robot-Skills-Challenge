@@ -14,7 +14,7 @@ public class DriveForward extends CommandBase {
   /** Creates a new DriveForward. */
   public DriveForward(double distance) {
     // Use addRequirements() here to declare subsystem dependencies.
-    addRequirements(RobotContainer.getDrive().getInstance());
+    addRequirements(RobotContainer.getDrive());
     targetDistance = distance;
   }
 
@@ -44,7 +44,7 @@ public class DriveForward extends CommandBase {
   @Override
   public boolean isFinished() {
     System.out.println(targetDistance - RobotContainer.getDrive().getEncoderDistance());
-    if (Math.abs(targetDistance - RobotContainer.getDrive().getEncoderDistance()) < 0.1) {
+    if (Math.abs(Math.abs(targetDistance) - Math.abs(RobotContainer.getDrive().getEncoderDistance())) <= 0.1) {
       return true;
     }
     return false;
