@@ -76,8 +76,12 @@ public class DriveTrain extends SubsystemBase {
 
   public void tankDrive(double lPower, double rPower){
     System.out.println("Total Distance:" + getEncoderDistance());
-    System.out.println("RIGHT: " + getRightDistanceMeters());
-    System.out.println("LEFT: " + getLeftDistanceMeters());
+    System.out.println("RIGHT (ticks): " + right.getSelectedSensorPosition());
+    System.out.println("Left (ticks): " + left.getSelectedSensorPosition());
+    System.out.println("RIGHT (meters): " + getRightDistanceMeters());
+    System.out.println("LEFT (meters): " + getLeftDistanceMeters());
+    System.out.println(1/4096);
+    System.out.println(1/4096.0);
 
     left.set(ControlMode.PercentOutput, lPower);
     right.set(ControlMode.PercentOutput, rPower);
@@ -127,12 +131,12 @@ public class DriveTrain extends SubsystemBase {
   //convert from tiks/s to m/s
   public DifferentialDriveWheelSpeeds getSpeeds(){
     return new DifferentialDriveWheelSpeeds(
-      left.getSelectedSensorVelocity() * 0.16 * Math.PI * (1/4096),
-      right.getSelectedSensorVelocity() * 0.16 * Math.PI * (1/4096));
+      left.getSelectedSensorVelocity() * 0.16 * Math.PI * (1/4096.0),
+      right.getSelectedSensorVelocity() * 0.16 * Math.PI * (1/4096.0));
   }
 
   public double getRightDistanceMeters(){
-    return right.getSelectedSensorPosition() * 0.16 * Math.PI * (1/4096);
+    return right.getSelectedSensorPosition() * 0.16 * Math.PI * (1/4096.0);
   }
 
   public double getLeftDistanceMeters(){
