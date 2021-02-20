@@ -11,9 +11,11 @@ import edu.wpi.first.wpilibj2.command.CommandBase;
 public class IntakeTest extends CommandBase {
   /** Creates a new IntakeTest. */
   private TalonSRX storer = new TalonSRX(10);
+  private TalonSRX belt = new TalonSRX(12);
   
   public IntakeTest() {
     // Use addRequirements() here to declare subsystem dependencies.
+    belt.setInverted(true);
   }
 
   // Called when the command is initially scheduled.
@@ -25,7 +27,9 @@ public class IntakeTest extends CommandBase {
   public void execute() {
     //when ball is intook, goes from 0 to about 5 amps
     storer.set(ControlMode.PercentOutput, 0.5);
-    System.out.println(storer.getSupplyCurrent()); 
+    System.out.println(storer.getSupplyCurrent());
+    if(storer.getSupplyCurrent() != 0 ) beltSpin();
+    //System.out.println(storer.getSupplyCurrent()); 
   }
 
   // Called once the command ends or is interrupted.
@@ -38,5 +42,18 @@ public class IntakeTest extends CommandBase {
   @Override
   public boolean isFinished() {
     return false;
+  }
+
+  public void beltSpin(){
+    long currentTime = System.currentTimeMillis();
+
+    //change value to vary time ball travels up belt
+    while(System.currentTimeMillis() - currentTime < 300){
+      System.out.println(System.currentTimeMillis() - currentTime);
+      System.out.println("belt running");
+      belt.set(ControlMode.PercentOutput, 0.60);
+    }
+    
+    belt.set(ControlMode.PercentOutput, 0);
   }
 }

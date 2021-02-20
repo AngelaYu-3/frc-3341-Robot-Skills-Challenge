@@ -21,6 +21,7 @@ public class DriveForward extends CommandBase {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
+    System.out.println("drive forward");
     RobotContainer.getDrive().resetEncoders();
   }
 

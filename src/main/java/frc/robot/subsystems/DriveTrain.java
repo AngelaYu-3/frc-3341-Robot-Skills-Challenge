@@ -75,13 +75,8 @@ public class DriveTrain extends SubsystemBase {
   }
 
   public void tankDrive(double lPower, double rPower){
-    System.out.println("Total Distance:" + getEncoderDistance());
-    System.out.println("RIGHT (ticks): " + right.getSelectedSensorPosition());
-    System.out.println("Left (ticks): " + left.getSelectedSensorPosition());
-    System.out.println("RIGHT (meters): " + getRightDistanceMeters());
-    System.out.println("LEFT (meters): " + getLeftDistanceMeters());
-    System.out.println(1/4096);
-    System.out.println(1/4096.0);
+   System.out.println("Left: " + lPower);
+   System.out.println("Right: " + rPower);
 
     left.set(ControlMode.PercentOutput, lPower);
     right.set(ControlMode.PercentOutput, rPower);
@@ -110,13 +105,14 @@ public class DriveTrain extends SubsystemBase {
   }*/
   
   public void resetGyro(){
-    gyro.zeroYaw();
+    gyro.reset();
   }
 
   public double getAngle(){
     //returns angle about Z axis from -180 to 180
     //neg left, pos right
-    return gyro.getYaw();
+    System.out.println("ANGLE" + gyro.getAngle());
+    return gyro.getAngle();
   }
 
   public void setOutput(double leftVolts, double rightVolts){
@@ -131,16 +127,20 @@ public class DriveTrain extends SubsystemBase {
   //convert from tiks/s to m/s
   public DifferentialDriveWheelSpeeds getSpeeds(){
     return new DifferentialDriveWheelSpeeds(
-      left.getSelectedSensorVelocity() * 0.16 * Math.PI * (1/4096.0),
-      right.getSelectedSensorVelocity() * 0.16 * Math.PI * (1/4096.0));
+      left.getSelectedSensorVelocity() * 0.15 * Math.PI * (1/4096.0),
+      right.getSelectedSensorVelocity() * 0.15 * Math.PI * (1/4096.0));
   }
 
   public double getRightDistanceMeters(){
-    return right.getSelectedSensorPosition() * 0.16 * Math.PI * (1/4096.0);
+    //System.out.println("RIGHT" + right.getSelectedSensorPosition());
+    return right.getSelectedSensorPosition() * 0.40 * Math.PI * (1/4096.0);
+    //return right.getSelectedSensorPosition() * kTicksToMeters;
   }
 
   public double getLeftDistanceMeters(){
-    return left.getSelectedSensorPosition() * 0.16 * Math.PI * (1/4096);
+    //System.out.println("LEFT" + left.getSelectedSensorPosition());
+    return left.getSelectedSensorPosition() * 0.40 * Math.PI * (1/4096.0);
+    //return left.getSelectedSensorPosition() * kTicksToMeters;
   }
 
   public double getEncoderDistance(){
@@ -176,12 +176,11 @@ public class DriveTrain extends SubsystemBase {
   public void reset(){
     odometry.resetPosition(new Pose2d(), getHeading());
   }
-
   
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
-    tankDrive(RobotContainer.getJoy().getY(), RobotContainer.getJoy1().getY());
+    //tankDrive(-RobotContainer.getJoy().getY(), -RobotContainer.getJoy1().getY());
     //arcadeDrive(RobotContainer.getJoy().getY(), RobotContainer.getJoy().getX());
     pose = odometry.update(getHeading(), getLeftDistanceMeters(), getRightDistanceMeters());
   }

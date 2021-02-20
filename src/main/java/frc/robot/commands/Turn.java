@@ -27,13 +27,15 @@ public class Turn extends CommandBase {
   @Override
   public void execute() {
     //this can probably be optimized in some way--saw last year PID was used for power management?
+    System.out.println(RobotContainer.getDrive().getAngle());
     double error = Math.abs(angle - RobotContainer.getDrive().getAngle());
-    double power = error * 0.01;
+    double power = error * 0.1;
 
     if(power > 0.5) power = 0.5;
-    if(angle > 0) RobotContainer.getDrive().tankDrive(power, -power);
-    else RobotContainer.getDrive().tankDrive(-power, power);
+    if(angle > 0) RobotContainer.getDrive().tankDrive(0.5, -0.5);
+    else RobotContainer.getDrive().tankDrive(-0.5, 0.5);
     
+    //RobotContainer.getDrive().tankDrive(0, -0.5);
   }
 
   // Called once the command ends or is interrupted.
@@ -47,7 +49,7 @@ public class Turn extends CommandBase {
   public boolean isFinished() {
   //System.out.println(RobotContainer.getDrive().getAngle());
   //System.out.println(angle - RobotContainer.getDrive().getAngle());
-  if(Math.abs(angle - RobotContainer.getDrive().getAngle()) <= 10){
+  if(Math.abs(angle - RobotContainer.getDrive().getAngle()) <= 1){
     return true;
   }return false;
   }
