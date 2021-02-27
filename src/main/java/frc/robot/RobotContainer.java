@@ -58,11 +58,12 @@ public class RobotContainer {
 
     public SequentialCommandGroup getAutonomousCommand() {
         // An ExampleCommand will run in autonomous
-        TrajectoryConfig config = new TrajectoryConfig(Units.feetToMeters(2.0), Units.feetToMeters(2.0));
+        TrajectoryConfig config = new TrajectoryConfig(0.3, 0.1);
         config.setKinematics(drive.getKinematics());
+        //config.setConstraint(autoVoltageConstraint);
         
         //pathweaver testing (S path)
-        String trajectoryJSON = "paths/test.wpilib.json";
+        /*String trajectoryJSON = "paths/test.wpilib.json";
         Trajectory trajectory = new Trajectory();
 
         try {
@@ -70,22 +71,23 @@ public class RobotContainer {
          trajectory = TrajectoryUtil.fromPathweaverJson(trajectoryPath);
         } catch (IOException ex) {
          DriverStation.reportError("Unable to open trajectory: " + trajectoryJSON, ex.getStackTrace());
-       }
+       }*/
        
-        Trajectory trajectoryEx = TrajectoryGenerator.generateTrajectory(
-            // Start at the origin facing the +X direction
-            new Pose2d(0, 0, new Rotation2d(0)),
-            // Pass through these two interior waypoints, making an 's' curve path
-            List.of(
-                new Translation2d(1, 1),
-                new Translation2d(2, -1)
-            ),
-            // End 3 meters straight ahead of where we started, facing forward
-            new Pose2d(3, 0, new Rotation2d(0)),
-            // Pass config
-            config
-        );
-        
+       Trajectory trajectory = TrajectoryGenerator.generateTrajectory(
+        // Start at the origin facing the +X direction
+        new Pose2d(0, 0, new Rotation2d(0)),
+        // Pass through these two interior waypoints, making an 's' curve path
+        List.of(
+            new Translation2d(0.3, 0.3),
+            new Translation2d(0.5, -0.3),
+            new Translation2d(0.7, -0.3)
+        ),
+        // End 4 meters straight ahead of where we started, facing forward
+        new Pose2d(0.9, 0, new Rotation2d(0)),
+        // Pass config
+        config
+      );
+
         /*Trajectory trajectory = TrajectoryGenerator.generateTrajectory(
           Arrays.asList(new Pose2d(), 
               new Pose2d(1.0, 0, new Rotation2d()),
@@ -94,7 +96,7 @@ public class RobotContainer {
          );*/
     
         RamseteCommand command = new RamseteCommand(
-          trajectoryEx,
+          trajectory,
           drive::getPose,
           new RamseteController(2, .7),
           drive.getFeedForward(),
@@ -105,6 +107,7 @@ public class RobotContainer {
           drive::setOutputVolts,
           drive
         );
+        //drive.resetOdometry(trajectoryEx.getInitialPose());
     
         return command.andThen(() -> drive.setOutputVolts(0, 0));
       }

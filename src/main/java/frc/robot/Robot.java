@@ -4,6 +4,7 @@ import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.commands.DriveForward;
+import frc.robot.commands.GalacticSearch;
 import frc.robot.commands.IntakeTest;
 import frc.robot.commands.Turn;
 
@@ -16,6 +17,7 @@ import frc.robot.commands.Turn;
 public class Robot extends TimedRobot {
   private Command m_autonomousCommand;
   private RobotContainer m_robotContainer;
+  Limelight lime = new Limelight();
 
   /**
    * This function is run when the robot is first started up and should be used for any
@@ -41,6 +43,7 @@ public class Robot extends TimedRobot {
     // commands, running already-scheduled commands, removing finished or interrupted commands,
     // and running subsystem periodic() methods.  This must be called from the robot's periodic
     // block in order for anything in the Command-based framework to work.
+    //lime.getDistance();
     CommandScheduler.getInstance().run();
   }
 
@@ -56,9 +59,10 @@ public class Robot extends TimedRobot {
   public void autonomousInit() {
     System.out.println("AUTO ENTERED");
     //m_autonomousCommand = new DriveForward(1.0);
-    m_autonomousCommand = new Turn(-90);
-    //m_autonomousCommand = new IntakeTest();
-    //11,100 11,576 135cm
+    //m_autonomousCommand = new Turn(-90);
+    m_autonomousCommand = m_robotContainer.getAutonomousCommand();
+    //m_autonomousCommand = new GalacticSearch();
+
 
     // schedule the autonomous command (example)
     if (m_autonomousCommand != null) {

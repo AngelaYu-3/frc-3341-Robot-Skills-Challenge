@@ -32,8 +32,8 @@ public class Turn extends CommandBase {
     double power = error * 0.1;
 
     if(power > 0.5) power = 0.5;
-    if(angle > 0) RobotContainer.getDrive().tankDrive(0.5, -0.5);
-    else RobotContainer.getDrive().tankDrive(-0.5, 0.5);
+    if(angle > 0) RobotContainer.getDrive().tankDrive(power, -power);
+    else RobotContainer.getDrive().tankDrive(-power, power);
     
     //RobotContainer.getDrive().tankDrive(0, -0.5);
   }

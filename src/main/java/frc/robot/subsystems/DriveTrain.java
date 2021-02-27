@@ -19,28 +19,32 @@ import edu.wpi.first.wpilibj.kinematics.DifferentialDriveOdometry;
 import edu.wpi.first.wpilibj.kinematics.DifferentialDriveWheelSpeeds;
 import edu.wpi.first.wpilibj.util.Units;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Limelight;
 import frc.robot.RobotContainer;
 import frc.robot.RobotMap;
 
 public class DriveTrain extends SubsystemBase {
   /** Creates a new DriveTrain. */
-  private double kTrackwidth = 28;
-  private double kS = 1;
-  private double kV = 1;
-  private double kA = 1;
-  private double kP = 1;
+  //trackwidth 1.76
+  private double kTrackwidth = 1.76;
+  private double kS = 1.12;
+  private double kV = 4.36;
+  private double kA = 0.531;
+  private double kP = 1.79;
   private double kI = 0;
   private double kD = 0;
 
   private TalonSRX left = new TalonSRX(RobotMap.leftDrivePort);
   private TalonSRX right = new TalonSRX(RobotMap.rightDrivePort);
 
+  Limelight li = new Limelight();
+
   private AHRS gyro = new AHRS(SPI.Port.kMXP);
   //private Ultrasonic ultrasonic = new Ultrasonic(RobotMap.ultrasonic1, RobotMap.ultrasonic2);
 
   private static DriveTrain instance;
   
-  private DifferentialDriveKinematics kinematics = new DifferentialDriveKinematics(Units.inchesToMeters(kTrackwidth));
+  private DifferentialDriveKinematics kinematics = new DifferentialDriveKinematics(kTrackwidth);
   private DifferentialDriveOdometry odometry = new DifferentialDriveOdometry(getHeading());
 
   private SimpleMotorFeedforward feedForward = new SimpleMotorFeedforward(kS, kV, kA);
@@ -127,19 +131,21 @@ public class DriveTrain extends SubsystemBase {
   //convert from tiks/s to m/s
   public DifferentialDriveWheelSpeeds getSpeeds(){
     return new DifferentialDriveWheelSpeeds(
-      left.getSelectedSensorVelocity() * 0.15 * Math.PI * (1/4096.0),
-      right.getSelectedSensorVelocity() * 0.15 * Math.PI * (1/4096.0));
+      left.getSelectedSensorVelocity() * 0.16 * Math.PI * (1/4096.0),
+      right.getSelectedSensorVelocity() * 0.16 * Math.PI * (1/4096.0));
   }
 
   public double getRightDistanceMeters(){
-    //System.out.println("RIGHT" + right.getSelectedSensorPosition());
-    return right.getSelectedSensorPosition() * 0.40 * Math.PI * (1/4096.0);
+    System.out.println("RIGHT" + right.getSelectedSensorPosition());
+
+    //competition robot: 0.40
+    return right.getSelectedSensorPosition() * 0.16 * Math.PI * (1/4096.0);
     //return right.getSelectedSensorPosition() * kTicksToMeters;
   }
 
   public double getLeftDistanceMeters(){
-    //System.out.println("LEFT" + left.getSelectedSensorPosition());
-    return left.getSelectedSensorPosition() * 0.40 * Math.PI * (1/4096.0);
+    System.out.println("LEFT" + left.getSelectedSensorPosition());
+    return left.getSelectedSensorPosition() * 0.16 * Math.PI * (1/4096.0);
     //return left.getSelectedSensorPosition() * kTicksToMeters;
   }
 
@@ -176,11 +182,12 @@ public class DriveTrain extends SubsystemBase {
   public void reset(){
     odometry.resetPosition(new Pose2d(), getHeading());
   }
-  
+
   @Override
   public void periodic() {
+    System.out.println(li.getDistance());
     // This method will be called once per scheduler run
-    //tankDrive(-RobotContainer.getJoy().getY(), -RobotContainer.getJoy1().getY());
+    tankDrive(-RobotContainer.getJoy().getY(), -RobotContainer.getJoy1().getY());
     //arcadeDrive(RobotContainer.getJoy().getY(), RobotContainer.getJoy().getX());
     pose = odometry.update(getHeading(), getLeftDistanceMeters(), getRightDistanceMeters());
   }
