@@ -7,6 +7,7 @@ package frc.robot.subsystems;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
+import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 import com.kauailabs.navx.frc.AHRS;
 import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.Ultrasonic;
@@ -26,18 +27,17 @@ import frc.robot.RobotMap;
 public class DriveTrain extends SubsystemBase {
   /** Creates a new DriveTrain. */
   //trackwidth 1.76
-  private double kTrackwidth = 1.76;
-  private double kS = 1.12;
-  private double kV = 4.36;
-  private double kA = 0.531;
-  private double kP = 1.79;
-  private double kI = 0;
-  private double kD = 0;
+  private double kTrackwidth = 0.63;
+  //kS: 1.76
+  private double kS = 0.709;
+  private double kV = 4.7;
+  private double kA = 0.598;
+  private double kP = 1.71;
 
-  private TalonSRX left = new TalonSRX(RobotMap.leftDrivePort);
-  private TalonSRX right = new TalonSRX(RobotMap.rightDrivePort);
+  private WPI_TalonSRX left = new WPI_TalonSRX(RobotMap.leftDrivePort);
+  private WPI_TalonSRX right = new WPI_TalonSRX(RobotMap.rightDrivePort);
 
-  Limelight li = new Limelight();
+  //Limelight li = new Limelight();
 
   private AHRS gyro = new AHRS(SPI.Port.kMXP);
   //private Ultrasonic ultrasonic = new Ultrasonic(RobotMap.ultrasonic1, RobotMap.ultrasonic2);
@@ -45,14 +45,14 @@ public class DriveTrain extends SubsystemBase {
   private static DriveTrain instance;
   
   private DifferentialDriveKinematics kinematics = new DifferentialDriveKinematics(kTrackwidth);
-  private DifferentialDriveOdometry odometry = new DifferentialDriveOdometry(getHeading());
+  private DifferentialDriveOdometry odometry = new DifferentialDriveOdometry(gyro.getRotation2d());
 
   private SimpleMotorFeedforward feedForward = new SimpleMotorFeedforward(kS, kV, kA);
 
-  private PIDController leftPIDController = new PIDController(kP, kI, kD);
-  private PIDController rightPIDController = new PIDController(kP, kI, kD);
+  private PIDController leftPIDController = new PIDController(kP, 0, 0);
+  private PIDController rightPIDController = new PIDController(kP, 0, 0);
 
-  Pose2d pose = new Pose2d();
+  Pose2d pose;
 
   public DriveTrain() {
     //left.setInverted(true);
@@ -64,11 +64,12 @@ public class DriveTrain extends SubsystemBase {
     right.setInverted(true);
     right.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative, 0, 10);
 
-    resetEncoders();
+    //resetEncoders();
+
 
    //ultrasonic.setAutomaticMode(true);
 
-    gyro.calibrate();
+    gyro.zeroYaw();
   }
 
   public DriveTrain getInstance(){
@@ -79,8 +80,8 @@ public class DriveTrain extends SubsystemBase {
   }
 
   public void tankDrive(double lPower, double rPower){
-   System.out.println("Left: " + lPower);
-   System.out.println("Right: " + rPower);
+   //System.out.println("Left: " + lPower);
+   //System.out.println("Right: " + rPower);
 
     left.set(ControlMode.PercentOutput, lPower);
     right.set(ControlMode.PercentOutput, rPower);
@@ -119,10 +120,10 @@ public class DriveTrain extends SubsystemBase {
     return gyro.getAngle();
   }
 
-  public void setOutput(double leftVolts, double rightVolts){
-    left.set(ControlMode.PercentOutput, leftVolts/12);
-    right.set(ControlMode.PercentOutput, rightVolts/12);
-  }
+ /* public void setOutput(double leftVolts, double rightVolts){
+    left.setVoltage(leftVolts);
+    right.setVoltage(rightVolts);
+  }*/
 
   public Rotation2d getHeading(){
     return Rotation2d.fromDegrees(-gyro.getAngle());
@@ -131,21 +132,21 @@ public class DriveTrain extends SubsystemBase {
   //convert from tiks/s to m/s
   public DifferentialDriveWheelSpeeds getSpeeds(){
     return new DifferentialDriveWheelSpeeds(
-      left.getSelectedSensorVelocity() * 0.16 * Math.PI * (1/4096.0),
-      right.getSelectedSensorVelocity() * 0.16 * Math.PI * (1/4096.0));
+      (left.getSelectedSensorVelocity() * 0.10 * Math.PI * 10) / 4096.0,
+      (right.getSelectedSensorVelocity() * 0.10 * Math.PI * 10) / 4096.0);
   }
 
   public double getRightDistanceMeters(){
-    System.out.println("RIGHT" + right.getSelectedSensorPosition());
+    //System.out.println("RIGHT" + right.getSelectedSensorPosition());
 
     //competition robot: 0.40
-    return right.getSelectedSensorPosition() * 0.16 * Math.PI * (1/4096.0);
+    return -right.getSelectedSensorPosition() * 0.10 * Math.PI * (1/4096.0);
     //return right.getSelectedSensorPosition() * kTicksToMeters;
   }
 
   public double getLeftDistanceMeters(){
-    System.out.println("LEFT" + left.getSelectedSensorPosition());
-    return left.getSelectedSensorPosition() * 0.16 * Math.PI * (1/4096.0);
+    //System.out.println("LEFT" + left.getSelectedSensorPosition());
+    return -left.getSelectedSensorPosition() * 0.10 * Math.PI * (1/4096.0);
     //return left.getSelectedSensorPosition() * kTicksToMeters;
   }
 
@@ -159,7 +160,7 @@ public class DriveTrain extends SubsystemBase {
   }
 
   public Pose2d getPose(){
-    return pose;
+    return odometry.getPoseMeters();
   }
 
   public SimpleMotorFeedforward getFeedForward(){
@@ -175,20 +176,28 @@ public class DriveTrain extends SubsystemBase {
   }
 
   public void setOutputVolts(double leftVolts, double rightVolts){
-    left.set(ControlMode.PercentOutput, leftVolts/12);
-    right.set(ControlMode.PercentOutput, rightVolts/12);
+    System.out.println("Left: " + -left.getSelectedSensorPosition());
+    System.out.println("Right: " + -right.getSelectedSensorPosition());
+    System.out.println("Pose: " + getPose());
+    left.setVoltage(leftVolts);
+    right.setVoltage(rightVolts);
   }
 
-  public void reset(){
-    odometry.resetPosition(new Pose2d(), getHeading());
+  public void zeroHeading(){
+    gyro.reset();
   }
 
   @Override
   public void periodic() {
-    System.out.println(li.getDistance());
+    //System.out.println(li.getDistance());
     // This method will be called once per scheduler run
     tankDrive(-RobotContainer.getJoy().getY(), -RobotContainer.getJoy1().getY());
     //arcadeDrive(RobotContainer.getJoy().getY(), RobotContainer.getJoy().getX());
-    pose = odometry.update(getHeading(), getLeftDistanceMeters(), getRightDistanceMeters());
+    odometry.update(gyro.getRotation2d(), getRightDistanceMeters(), getLeftDistanceMeters());
   }
+
+public void resetOdometry(Pose2d initialPose) {
+   resetEncoders();
+   odometry.resetPosition(initialPose, gyro.getRotation2d());
+}
 }

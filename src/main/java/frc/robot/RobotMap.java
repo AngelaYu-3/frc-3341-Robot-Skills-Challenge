@@ -20,5 +20,12 @@ public class RobotMap {
     //ultrasonic ports
     public static int ultrasonic1 = 0;
     public static int ultrasonic2 = 1;
+
+    //mp constants
+    public static double kP = 1.71;
+    public static double kS = 0.709;
+    public static double kA = 0.598;
+    public static double kV = 4.7; 
+    public static double trackwidth = 0.63;
     
 }

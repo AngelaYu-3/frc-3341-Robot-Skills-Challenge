@@ -25,7 +25,7 @@ public class forwardAlign extends CommandBase {
   @Override
   public void execute() {
     dist = li.getDistance();
-    System.out.println("test: "+li.getDistance()); 
+    //System.out.println("test: "+li.getDistance()); 
     if(dist>10){
     RobotContainer.getDrive().tankDrive(-0.25, -.25);
     System.out.println("MOVE");
