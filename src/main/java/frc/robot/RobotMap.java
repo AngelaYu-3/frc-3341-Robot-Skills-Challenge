@@ -1,6 +1,7 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj.kinematics.DifferentialDriveKinematics;
+import edu.wpi.first.wpilibj.util.Units;
 
 // Copyright (c) FIRST and other WPILib contributors.
 // Open Source Software; you can modify and/or share it under the terms of
@@ -26,6 +27,7 @@ public class RobotMap {
     public static double kS = 0.709;
     public static double kA = 0.598;
     public static double kV = 4.7; 
-    public static double trackwidth = 0.63;
+    public static double kTrackwidthInches = Units.metersToFeet(0.63);
+    public static double kTrackwidth = 0.63;
     
 }

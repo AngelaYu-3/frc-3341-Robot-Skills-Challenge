@@ -61,29 +61,20 @@ public class RobotContainer {
 
     public SequentialCommandGroup getAutonomousCommand() {
         // An ExampleCommand will run in autonomous
-        //var autoVoltageConstraint = new DifferentialDriveVoltageConstraint(new SimpleMotorFeedforward(0.709, 4.7, 0.598),
-        //new DifferentialDriveKinematics(0.63), 10);
 
         TrajectoryConfig config = new TrajectoryConfig(4, 2);
         config.setKinematics(drive.getKinematics());
-        //config.addConstraint(autoVoltageConstraint);
-        
-        
-        
-        //config.setConstraint(autoVoltageConstraint);
         
         //pathweaver testing (S path)
-        /*String trajectoryJSON = "paths/test.wpilib.json";
-        Trajectory trajectory = new Trajectory();
-
+        String trajectoryJSON = "paths/Barrel.wpilib.json";
+        Trajectory trajectory1 = new Trajectory();
         try {
-         Path trajectoryPath = Filesystem.getDeployDirectory().toPath().resolve(trajectoryJSON);
-         trajectory = TrajectoryUtil.fromPathweaverJson(trajectoryPath);
-        } catch (IOException ex) {
-         DriverStation.reportError("Unable to open trajectory: " + trajectoryJSON, ex.getStackTrace());
-       }*/
+            Path trajectoryPath = Filesystem.getDeployDirectory().toPath().resolve(trajectoryJSON);
+            trajectory1 = TrajectoryUtil.fromPathweaverJson(trajectoryPath);
+            } catch (IOException ex) {
+               DriverStation.reportError("Unable to open trajectory: " + trajectoryJSON, ex.getStackTrace());
+             }
        
-      // 1 is 0.3 m 
       Trajectory trajectory = TrajectoryGenerator.generateTrajectory(
         // Start at the origin facing the +X direction
         new Pose2d(0, 0, new Rotation2d(0)),
@@ -97,14 +88,8 @@ public class RobotContainer {
         // Pass config
         config
       );
-
-        /*Trajectory trajectory = TrajectoryGenerator.generateTrajectory(
-          Arrays.asList(new Pose2d(), 
-              new Pose2d(1.0, 0, new Rotation2d()),
-              new Pose2d(2.3, 1.2, Rotation2d.fromDegrees(90.0))),
-              config
-         );*/
     
+        drive.resetOdometry(trajectory1.getInitialPose());
         RamseteCommand command = new RamseteCommand(
           
           trajectory,
@@ -118,7 +103,7 @@ public class RobotContainer {
           drive::setOutputVolts,
           drive
         );
-        drive.resetOdometry(trajectory.getInitialPose());
+        
         
         System.out.println("calling command");
         return command.andThen(() -> drive.setOutputVolts(0, 0));
